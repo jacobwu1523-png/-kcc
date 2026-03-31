@@ -1,1 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>機密訊息傳輸終端</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Creepster&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --blood-red: #660000;
+            --interface-color: #222;
+            --text-main: #c0c0c0;
+        }
+
+        body {
+            background-color: #050505;
+            color: var(--text-main);
+            margin: 0;
+            font-family: 'Special Elite', serif; /* 預設字體 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            transition: font-family 0.3s ease;
+        }
+
+        /* 螢幕噪點效果 */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Noisy_Texture.png');
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* 文字顯示區域 */
+        #display-container {
+            width: 85%;
+            max-width: 800px;
+            height: 250px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        #typed-text {
+            font-size: 2.8rem;
+            line-height: 1.4;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        #cursor {
+            display: inline-block;
+            width: 15px;
+            height: 2.8rem;
+            background-color: var(--blood-red);
+            margin-left: 10px;
+            animation: blink 0.8s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* 下方操作控制台 */
+        #control-panel {
+            width: 90%;
+            max-width: 600px;
+            background: var(--interface-color);
+            padding: 25px;
+            border-radius: 2px;
+            border-top: 3px solid var(--blood-red);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        textarea {
+            width: 100%;
+            background: #111;
+            border: 1px solid #333;
+            color: #ddd;
+            padding: 10px;
+            font-family: inherit;
+            resize: none;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        select, button {
+            background: #111;
+            border: 1px solid #333;
+            color: #ddd;
+            padding: 10px;
+            cursor: pointer;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        select:focus, textarea:focus {
+            border-color: var(--blood-red);
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        #start-btn {
+            flex-grow: 1;
+            background: var(--blood-red);
+            color: white;
+            border: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        #start-btn:hover {
+            background: #900;
+            box-shadow: 0 0 10px #900;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="display-container">
+        <div>
+            <span id="typed-text"></span><span id="cursor"></span>
+        </div>
+    </div>
+
+    <div id="control-panel">
+        <div class="input-group">
+            <label>Message Content</label>
+            <textarea id="user-input" rows="2" placeholder="在此輸入自訂文字..."></textarea>
+        </div>
+
+        <div class="flex-row">
+            <div style="flex: 1;">
+                <label>Atmosphere (Font)</label>
+                <select id="font-select" style="width: 100%;">
+                    <option value="'Special Elite'">經典打字機 (Special Elite)</option>
+                    <option value="'Creepster'">恐懼扭曲 (Creepster)</option>
+                    <option value="'Ma Shan Zheng'">中式驚悚毛筆 (Ma Shan Zheng)</option>
+                    <option value="'Zhi Mang Xing'">瘋狂草書 (Zhi Mang Xing)</option>
+                    <option value="'Metal Mania'">重金屬哥德 (Metal Mania)</option>
+                    <option value="'Courier Prime'">標準公文 (Courier Prime)</option>
+                </select>
+            </div>
+            
+            <div style="flex: 1; display: flex; align-items: flex-end;">
+                <button id="start-btn">執行傳輸</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const typedText = document.getElementById('typed-text');
+        const userInput = document.getElementById('user-input');
+        const fontSelect = document.getElementById('font-select');
+        const startBtn = document.getElementById('start-btn');
+        
+        let timer = null;
+
+        // 當使用者切換選單時，直接改變頁面字體
+        fontSelect.addEventListener('change', () => {
+            document.body.style.fontFamily = fontSelect.value + ", serif";
+            startTyping(); // 切換字體後自動重新播放
+        });
+
+        function startTyping() {
+            // 清除之前的計時器
+            if (timer) clearInterval(timer);
+            
+            const text = userInput.value || "這是一個神祕的開端...";
+            typedText.textContent = "";
+            let i = 0;
+
+            timer = setInterval(() => {
+                if (i < text.length) {
+                    typedText.textContent += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(timer);
+                }
+            }, 150); // 慢打字速度（毫秒）
+        }
+
+        startBtn.addEventListener('click', startTyping);
+
+        // 初始載入
+        window.onload = () => {
+            userInput.value = "有些祕密，永遠不該被揭開。";
+            startTyping();
+        };
+    </script>
+</body>
+</html>
 
