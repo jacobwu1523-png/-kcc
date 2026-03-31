@@ -3,197 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>機密訊息傳輸終端</title>
+    <title>機密訊息封裝終端</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Creepster&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Creepster&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --blood-red: #660000;
-            --interface-color: #222;
-            --text-main: #c0c0c0;
+            --blood-red: #800000;
+            --panel-bg: #111;
+            --text-color: #d0d0d0;
         }
 
         body {
             background-color: #050505;
-            color: var(--text-main);
+            color: var(--text-color);
             margin: 0;
-            font-family: 'Special Elite', serif; /* 預設字體 */
+            font-family: 'Special Elite', serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             overflow: hidden;
-            transition: font-family 0.3s ease;
         }
 
-        /* 螢幕噪點效果 */
-        body::after {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Noisy_Texture.png');
-            opacity: 0.03;
-            pointer-events: none;
-            z-index: 100;
-        }
-
-        /* 文字顯示區域 */
-        #display-container {
-            width: 85%;
-            max-width: 800px;
-            height: 250px;
-            text-align: center;
+        /* 預覽區域 */
+        #preview-box {
+            width: 80%;
+            height: 200px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 50px;
+            text-align: center;
+            margin-bottom: 40px;
         }
 
         #typed-text {
-            font-size: 2.8rem;
+            font-size: 2.5rem;
             line-height: 1.4;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            text-shadow: 0 0 10px rgba(255,0,0,0.2);
         }
 
         #cursor {
             display: inline-block;
-            width: 15px;
-            height: 2.8rem;
+            width: 12px;
+            height: 2.5rem;
             background-color: var(--blood-red);
-            margin-left: 10px;
+            margin-left: 8px;
             animation: blink 0.8s infinite;
             vertical-align: middle;
         }
 
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* 下方操作控制台 */
-        #control-panel {
+        /* 控制面板 */
+        #panel {
+            background: var(--panel-bg);
+            padding: 20px;
+            border: 1px solid #333;
             width: 90%;
-            max-width: 600px;
-            background: var(--interface-color);
-            padding: 25px;
-            border-radius: 2px;
-            border-top: 3px solid var(--blood-red);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            z-index: 10;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.7rem;
-            color: #666;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            letter-spacing: 1px;
+            max-width: 500px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.8);
         }
 
         textarea {
             width: 100%;
-            background: #111;
-            border: 1px solid #333;
-            color: #ddd;
+            background: #000;
+            color: #eee;
+            border: 1px solid #444;
             padding: 10px;
-            font-family: inherit;
-            resize: none;
             box-sizing: border-box;
-            outline: none;
+            font-family: inherit;
+            margin-bottom: 15px;
+            resize: none;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
         }
 
         select, button {
-            background: #111;
-            border: 1px solid #333;
-            color: #ddd;
+            flex: 1;
             padding: 10px;
+            background: #222;
+            color: #ccc;
+            border: 1px solid #444;
             cursor: pointer;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: sans-serif;
         }
 
-        select:focus, textarea:focus {
-            border-color: var(--blood-red);
-        }
-
-        .flex-row {
-            display: flex;
-            gap: 10px;
-        }
-
-        #start-btn {
-            flex-grow: 1;
+        #download-btn {
             background: var(--blood-red);
             color: white;
-            border: none;
             font-weight: bold;
-            transition: 0.3s;
+            border: none;
         }
 
-        #start-btn:hover {
-            background: #900;
-            box-shadow: 0 0 10px #900;
+        #download-btn:hover {
+            background: #a00;
+        }
+
+        .hint {
+            font-size: 0.7rem;
+            color: #555;
+            margin-bottom: 5px;
+            text-transform: uppercase;
         }
     </style>
 </head>
 <body>
 
-    <div id="display-container">
+    <div id="preview-box">
         <div>
             <span id="typed-text"></span><span id="cursor"></span>
         </div>
     </div>
 
-    <div id="control-panel">
-        <div class="input-group">
-            <label>Message Content</label>
-            <textarea id="user-input" rows="2" placeholder="在此輸入自訂文字..."></textarea>
+    <div id="panel">
+        <div class="hint">編輯訊息內容</div>
+        <textarea id="user-text" rows="2">這是一個不該被開啟的檔案...</textarea>
+        
+        <div class="hint">自訂字體風格</div>
+        <div class="row">
+            <select id="font-select">
+                <option value="'Special Elite'">打字機 (Special Elite)</option>
+                <option value="'Creepster'">恐怖電影 (Creepster)</option>
+                <option value="'Ma Shan Zheng'">中式驚悚 (Ma Shan Zheng)</option>
+                <option value="'Zhi Mang Xing'">瘋狂草書 (Zhi Mang Xing)</option>
+            </select>
+            <button onclick="playPreview()">預覽效果</button>
         </div>
 
-        <div class="flex-row">
-            <div style="flex: 1;">
-                <label>Atmosphere (Font)</label>
-                <select id="font-select" style="width: 100%;">
-                    <option value="'Special Elite'">經典打字機 (Special Elite)</option>
-                    <option value="'Creepster'">恐懼扭曲 (Creepster)</option>
-                    <option value="'Ma Shan Zheng'">中式驚悚毛筆 (Ma Shan Zheng)</option>
-                    <option value="'Zhi Mang Xing'">瘋狂草書 (Zhi Mang Xing)</option>
-                    <option value="'Metal Mania'">重金屬哥德 (Metal Mania)</option>
-                    <option value="'Courier Prime'">標準公文 (Courier Prime)</option>
-                </select>
-            </div>
-            
-            <div style="flex: 1; display: flex; align-items: flex-end;">
-                <button id="start-btn">執行傳輸</button>
-            </div>
-        </div>
+        <button id="download-btn" onclick="downloadPage()">下載此網頁檔案 (.html)</button>
     </div>
 
     <script>
         const typedText = document.getElementById('typed-text');
-        const userInput = document.getElementById('user-input');
+        const userTextInput = document.getElementById('user-text');
         const fontSelect = document.getElementById('font-select');
-        const startBtn = document.getElementById('start-btn');
-        
         let timer = null;
 
-        // 當使用者切換選單時，直接改變頁面字體
-        fontSelect.addEventListener('change', () => {
+        // 切換字體預覽
+        fontSelect.onchange = () => {
             document.body.style.fontFamily = fontSelect.value + ", serif";
-            startTyping(); // 切換字體後自動重新播放
-        });
+            playPreview();
+        };
 
-        function startTyping() {
-            // 清除之前的計時器
+        function playPreview() {
             if (timer) clearInterval(timer);
-            
-            const text = userInput.value || "這是一個神祕的開端...";
+            const text = userTextInput.value || "...";
             typedText.textContent = "";
             let i = 0;
-
             timer = setInterval(() => {
                 if (i < text.length) {
                     typedText.textContent += text.charAt(i);
@@ -201,17 +163,56 @@
                 } else {
                     clearInterval(timer);
                 }
-            }, 150); // 慢打字速度（毫秒）
+            }, 150);
         }
 
-        startBtn.addEventListener('click', startTyping);
+        // --- 核心功能：下載成新的 HTML ---
+        function downloadPage() {
+            const finalContent = userTextInput.value;
+            const finalFont = fontSelect.value;
+            
+            // 構建新網頁的代碼內容
+            const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>收到一份機密訊息</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Creepster&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+    <style>
+        body { background: #050505; color: #d0d0d0; font-family: ${finalFont}, serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        #text { font-size: 3rem; text-align: center; line-height: 1.5; }
+        #cursor { display: inline-block; width: 12px; height: 3rem; background: #800000; margin-left: 10px; animation: b 0.8s infinite; vertical-align: middle; }
+        @keyframes b { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div id="text"></div><div id="cursor"></div>
+    <script>
+        const t = "${finalContent.replace(/"/g, '\\"')}";
+        let i = 0;
+        const el = document.getElementById('text');
+        const itv = setInterval(() => {
+            if(i < t.length) { el.textContent += t.charAt(i); i++; }
+            else { clearInterval(itv); }
+        }, 200);
+    <\/script>
+</body>
+</html>`;
 
-        // 初始載入
-        window.onload = () => {
-            userInput.value = "有些祕密，永遠不該被揭開。";
-            startTyping();
-        };
+            // 建立 Blob 並觸發下載
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'secret_message.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        window.onload = playPreview;
     </script>
 </body>
 </html>
-
